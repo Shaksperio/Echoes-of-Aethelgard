@@ -41,13 +41,4 @@
 - **Elara** — Eco-Vigilante / guia
 - **Malakor** — Arquiteto do Vazio (antagonista final)
 
-## Próximos passos planejados
-
-- Sequência de fuga de Oakhaven
-- Mais biomas e chefes
-- Habilidades adicionais de gating
-- Melhorias visuais e de performance
-
----
-
 Projeto em desenvolvimento ativo.

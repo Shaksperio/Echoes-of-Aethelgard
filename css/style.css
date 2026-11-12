@@ -24,7 +24,6 @@ body {
   z-index: 10;
 }
 
-/* ===== TITLE SCREEN ===== */
 #title-screen {
   position: absolute;
   inset: 0;
@@ -104,7 +103,6 @@ body {
   color: #8aa0c0;
 }
 
-/* ===== HUD ===== */
 #hud {
   position: absolute;
   bottom: 32px;
