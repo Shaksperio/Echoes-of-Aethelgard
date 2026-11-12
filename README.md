@@ -9,7 +9,7 @@
    ```bash
    python -m http.server 8080
    ```
-3. Acesse [http://localhost:8080](http://localhost:8080)
+3. Acesse http://localhost:8080
 4. Clique em **Entrar em Aethelgard** e depois clique na tela para capturar o mouse.
 
 ## Controles
