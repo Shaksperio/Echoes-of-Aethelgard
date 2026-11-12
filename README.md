@@ -2,10 +2,31 @@
 
 **Metroidvania 3D Arcane-Punk** inspirado em Castlevania: Symphony of the Night, com mundo, personagens e sistemas originais.
 
-## Como jogar
+## Jogar online (GitHub Pages)
 
-1. Clone o repositório ou baixe os arquivos
-2. Abra um terminal na pasta do projeto e rode:
+Depois de ativar o GitHub Pages (veja abaixo), o jogo fica disponível em:
+
+**https://shaksperio.github.io/Echoes-of-Aethelgard/**
+
+### Como ativar o GitHub Pages (uma vez só)
+
+1. Vá em **Settings** do repositório
+2. No menu lateral, clique em **Pages**
+3. Em **Source**, escolha **GitHub Actions**
+4. Pronto. O workflow já está configurado e vai publicar automaticamente a cada push na `main`.
+
+Você também pode ir em **Actions** e rodar o workflow **Deploy to GitHub Pages** manualmente.
+
+---
+
+## Como jogar localmente
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/Shaksperio/Echoes-of-Aethelgard.git
+   cd Echoes-of-Aethelgard
+   ```
+2. Suba um servidor local:
    ```bash
    python -m http.server 8080
    ```
@@ -40,5 +61,9 @@
 - **Kaelen** — Protagonista (braço e espada de energia azul)
 - **Elara** — Eco-Vigilante / guia
 - **Malakor** — Arquiteto do Vazio (antagonista final)
+
+## GitHub Actions
+
+O workflow `.github/workflows/deploy.yml` publica o site no GitHub Pages automaticamente a cada push na branch `main`.
 
 Projeto em desenvolvimento ativo.
