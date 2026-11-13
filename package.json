@@ -1,0 +1,12 @@
+{
+  "name": "echoes-of-aethelgard",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Baseline de qualidade e testes de preservação para Echoes of Aethelgard",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

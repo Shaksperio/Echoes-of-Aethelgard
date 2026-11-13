@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { saveCampaign, loadCampaign } from './campaign-save.js';
 
 /* Echoes of Aethelgard 3D Prototype - Sylvan Keep */
 const CONFIG = {
@@ -13,6 +14,8 @@ let clock = new THREE.Clock();
 let gameStarted = false, currentRoom = 'hall', bossDefeated = false, gameWon = false;
 
 const player = {
+  position: new THREE.Vector3(0, 1.65, 12),
+  model: null,
   velocity: new THREE.Vector3(), onGround: false, canDash: true, dashTimer: 0,
   canAttack: true, attackTimer: 0, health: 100, ether: 100, maxHealth: 100, maxEther: 100,
   hasDoubleJump: false, doubleJumpUsed: false, invulnerable: 0
@@ -64,11 +67,52 @@ function init() {
   scene.fog = new THREE.Fog(0x0e0c18, 22, 85);
 
   camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 120);
-  camera.position.copy(spawnPoint);
+  player.position.copy(spawnPoint);
   window.camera = camera;
   controls = new PointerLockControls(camera, document.body);
 
-  setupLights(); buildWorld(); setupEvents(); updateHUD(); animate();
+  setupLights(); buildWorld(); createPlayerModel(); restoreCampaign(); setupEvents(); updateHUD(); updateThirdPersonCamera(); animate();
+}
+
+function createPlayerModel() {
+  const model = new THREE.Group();
+  const armor = new THREE.MeshStandardMaterial({ color: 0x26364b, roughness: 0.48, metalness: 0.62 });
+  const cloak = new THREE.MeshStandardMaterial({ color: 0x18202e, roughness: 0.92 });
+  const glow = new THREE.MeshStandardMaterial({ color: 0x62d8e8, emissive: 0x168ba8, emissiveIntensity: 1.25, metalness: 0.25 });
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.34, 0.72, 4, 8), armor);
+  torso.position.y = 1.05; model.add(torso);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 10), armor);
+  head.position.y = 1.82; model.add(head);
+  const mantle = new THREE.Mesh(new THREE.ConeGeometry(0.48, 1.05, 8), cloak);
+  mantle.position.set(0, 0.9, 0.22); mantle.rotation.x = -0.12; model.add(mantle);
+  const leftShoulder = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), armor);
+  leftShoulder.position.set(-0.42, 1.35, 0); model.add(leftShoulder);
+  const rightShoulder = leftShoulder.clone(); rightShoulder.position.x = 0.42; model.add(rightShoulder);
+  const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.13, 0), glow);
+  core.position.set(0, 1.08, -0.34); model.add(core);
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.78, 0.12), glow);
+  blade.position.set(0.55, 0.95, -0.05); blade.rotation.z = -0.22; model.add(blade);
+  model.traverse(node => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } });
+  scene.add(model);
+  player.model = model;
+}
+
+function updateThirdPersonCamera() {
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction);
+  direction.y = 0;
+  if (direction.lengthSq() < 0.001) direction.set(0, 0, -1);
+  direction.normalize();
+  const desired = player.position.clone().addScaledVector(direction, -5.8);
+  desired.y += 2.45;
+  camera.position.lerp(desired, 0.22);
+  if (player.model) {
+    player.model.position.set(player.position.x, player.position.y - CONFIG.playerHeight, player.position.z);
+    if (player.velocity.x * player.velocity.x + player.velocity.z * player.velocity.z > 0.15) {
+      player.model.rotation.y = Math.atan2(player.velocity.x, player.velocity.z);
+    }
+    player.model.visible = true;
+  }
 }
 
 function setupLights() {
@@ -132,6 +176,45 @@ function createSavePillar(x, y, z) {
   })); top.position.y = 4.1; g.add(top);
   const light = new THREE.PointLight(0x66bbff, 3.2, 14); light.position.y = 4.1; g.add(light);
   g.position.set(x, y, z); g.userData.isSave = true; return g;
+}
+
+function restoreCampaign() {
+  const result = loadCampaign(window.localStorage);
+  if (!result.ok) return;
+  const saved = result.snapshot;
+  currentRoom = saved.currentRoom;
+  Object.values(rooms).forEach(room => { room.visible = room.name === currentRoom; });
+  player.position.set(saved.position.x, saved.position.y, saved.position.z);
+  spawnPoint.set(saved.spawnPoint.x, saved.spawnPoint.y, saved.spawnPoint.z);
+  player.health = saved.health;
+  player.ether = saved.ether;
+  player.hasDoubleJump = saved.hasDoubleJump;
+  bossDefeated = saved.bossDefeated;
+  if (bossDefeated) {
+    enemies.filter(enemy => enemy.userData.isBoss).forEach(enemy => {
+      enemy.userData.alive = false;
+      enemy.visible = false;
+    });
+  }
+  const names = { hall: 'Hall de Entrada — Sylvan Keep', corridor: 'Corredor das Sombras', ante: bossDefeated ? 'Antecâmara Purificada' : 'Antecâmara do Lorde' };
+  document.getElementById('location-name').textContent = names[currentRoom];
+  if (player.hasDoubleJump) document.getElementById('ability-hint').textContent = 'Dash disponível | Pulo Duplo ativo';
+  document.getElementById('start-btn').textContent = 'Continuar campanha';
+  showMessage('Progresso local restaurado.');
+}
+
+function persistCampaign() {
+  const result = saveCampaign(window.localStorage, {
+    currentRoom,
+    position: player.position,
+    spawnPoint,
+    health: player.health,
+    ether: player.ether,
+    hasDoubleJump: player.hasDoubleJump,
+    bossDefeated
+  });
+  if (!result.ok) showMessage('Não foi possível salvar neste dispositivo.');
+  return result.ok;
 }
 
 function buildWorld() {
@@ -212,7 +295,7 @@ function spawnBoss(x, y, z, roomName) {
 }
 
 function updateEnemies(delta) {
-  const playerPos = camera.position;
+  const playerPos = player.position;
   enemies.forEach(e => {
     if (!e.userData.alive || e.userData.room !== currentRoom) return;
     const data = e.userData;
@@ -265,7 +348,7 @@ function damageEnemy(enemy, amount) {
     enemy.userData.alive = false; enemy.visible = false;
     player.ether = Math.min(player.maxEther, player.ether + (enemy.userData.isBoss ? 40 : 14)); updateHUD();
     if (enemy.userData.isBoss) {
-      bossDefeated = true; sfx('win');
+      bossDefeated = true; persistCampaign(); sfx('win');
       showMessage('Malakor fragmentado! A Antecâmara foi purificada.');
       setTimeout(() => { gameWon = true; showMessage('Área limpa — Sylvan Keep dominado.'); }, 3200);
     }
@@ -287,7 +370,7 @@ function tryAttack() {
   const forward = new THREE.Vector3(); camera.getWorldDirection(forward); forward.y = 0; forward.normalize();
   enemies.forEach(e => {
     if (!e.userData.alive || e.userData.room !== currentRoom) return;
-    const toEnemy = new THREE.Vector3().subVectors(e.position, camera.position);
+    const toEnemy = new THREE.Vector3().subVectors(e.position, player.position);
     const dist = toEnemy.length();
     const range = e.userData.isBoss ? CONFIG.attackRange + 0.8 : CONFIG.attackRange;
     if (dist < range) { toEnemy.normalize(); if (forward.dot(toEnemy) > 0.3) damageEnemy(e, CONFIG.attackDamage); }
@@ -295,7 +378,7 @@ function tryAttack() {
 }
 
 function checkRoomTransition() {
-  const pos = camera.position;
+  const pos = player.position;
   if (currentRoom === 'hall') {
     if (pos.x > 14 && pos.z < -6 && pos.z > -13 && pos.y > 3.2) switchRoom('corridor', new THREE.Vector3(-5, 1.65, 0));
     if (pos.z < -20 && Math.abs(pos.x) < 5.5) switchRoom('ante', new THREE.Vector3(0, 1.65, 9));
@@ -305,23 +388,27 @@ function checkRoomTransition() {
 function switchRoom(name, spawn) {
   Object.values(rooms).forEach(r => r.visible = false);
   rooms[name].visible = true; currentRoom = name;
-  camera.position.copy(spawn); player.velocity.set(0, 0, 0);
+  player.position.copy(spawn); player.velocity.set(0, 0, 0);
+  persistCampaign();
   const names = { hall: 'Hall de Entrada — Sylvan Keep', corridor: 'Corredor das Sombras', ante: bossDefeated ? 'Antecâmara Purificada' : 'Antecâmara do Lorde' };
   document.getElementById('location-name').textContent = names[name] || name;
 }
 
 function checkInteractables() {
   rooms.hall.children.forEach(c => {
-    if (c.userData && c.userData.isDoubleJump && !c.userData.collected && camera.position.distanceTo(c.position) < 2.4) {
+    if (c.userData && c.userData.isDoubleJump && !c.userData.collected && player.position.distanceTo(c.position) < 2.4) {
       c.userData.collected = true; c.visible = false; player.hasDoubleJump = true; sfx('collect');
+      persistCampaign();
       showMessage('Asas Etéreas adquiridas — Pulo Duplo desbloqueado!');
       document.getElementById('ability-hint').textContent = 'Dash pronto | Pulo Duplo ativo';
     }
   });
   savePoints.forEach(sp => {
-    if (camera.position.distanceTo(sp.pos) < 2.6 && keys['KeyE']) {
+    if (player.position.distanceTo(sp.pos) < 2.6 && keys['KeyE']) {
       player.health = player.maxHealth; player.ether = player.maxEther; spawnPoint.copy(sp.pos);
-      updateHUD(); sfx('save'); showMessage('Éter restaurado — Ponto de salvamento ativado'); keys['KeyE'] = false;
+      updateHUD();
+      if (persistCampaign()) { sfx('save'); showMessage('Campanha salva neste dispositivo.'); }
+      keys['KeyE'] = false;
     }
   });
 }
@@ -337,7 +424,7 @@ function showMessage(text) {
 }
 function respawn() {
   player.health = player.maxHealth; player.ether = player.maxEther * 0.65;
-  player.velocity.set(0, 0, 0); camera.position.copy(spawnPoint); player.invulnerable = 1.6;
+  player.velocity.set(0, 0, 0); player.position.copy(spawnPoint); player.invulnerable = 1.6;
   updateHUD(); showMessage('Você retornou ao último ponto de salvamento');
 }
 
@@ -349,6 +436,7 @@ function setupEvents() {
   });
   document.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
   document.addEventListener('keyup', e => { keys[e.code] = false; });
+  window.addEventListener('pagehide', () => { if (gameStarted) persistCampaign(); });
   document.addEventListener('mousedown', e => { if (e.button === 0 && controls.isLocked) tryAttack(); });
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -397,7 +485,7 @@ function updatePlayer(delta) {
   }
 
   player.velocity.y -= CONFIG.gravity * delta;
-  const pos = camera.position;
+  const pos = player.position;
   pos.x += player.velocity.x * delta; pos.y += player.velocity.y * delta; pos.z += player.velocity.z * delta;
 
   let groundY = CONFIG.playerHeight;
@@ -438,7 +526,7 @@ function updateHUD() {
 function animate() {
   requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.05);
-  updatePlayer(delta); updateEnemies(delta); renderer.render(scene, camera);
+  updatePlayer(delta); updateThirdPersonCamera(); updateEnemies(delta); renderer.render(scene, camera);
 }
 
 init();

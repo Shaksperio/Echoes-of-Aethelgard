@@ -1,0 +1,25 @@
+name: Quality checks
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main", "engineering/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    name: Baseline preservation tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run baseline tests
+        run: npm test
