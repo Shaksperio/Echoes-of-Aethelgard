@@ -1,69 +1,37 @@
 # Echoes of Aethelgard
 
-**Metroidvania 3D Arcane-Punk** inspirado em Castlevania: Symphony of the Night, com mundo, personagens e sistemas originais.
+Metroidvania 2D de fantasia sombria Arcane Punk, com mundo, personagens e sistemas originais. O jogo roda direto no navegador.
 
-## Jogar online (GitHub Pages)
+**Jogar:** https://shaksperio.github.io/Echoes-of-Aethelgard/
 
-Depois de ativar o GitHub Pages (veja abaixo), o jogo fica disponível em:
+Sete terras, cada uma com um castelo e um Lord, da Vila Ferrugem até o Trono do Vazio.
+Cada Lord derrotado concede um poder que abre caminhos nas terras anteriores.
 
-**https://shaksperio.github.io/Echoes-of-Aethelgard/**
-
-### Como ativar o GitHub Pages (uma vez só)
-
-1. Vá em **Settings** do repositório
-2. No menu lateral, clique em **Pages**
-3. Em **Source**, escolha **GitHub Actions**
-4. Pronto. O workflow já está configurado e vai publicar automaticamente a cada push na `main`.
-
-Você também pode ir em **Actions** e rodar o workflow **Deploy to GitHub Pages** manualmente.
-
----
-
-## Como jogar localmente
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/Shaksperio/Echoes-of-Aethelgard.git
-   cd Echoes-of-Aethelgard
-   ```
-2. Suba um servidor local:
-   ```bash
-   python -m http.server 8080
-   ```
-3. Acesse http://localhost:8080
-4. Clique em **Entrar em Aethelgard** e depois clique na tela para capturar o mouse.
+O protótipo 3D em primeira pessoa continua disponível em [/3d/](https://shaksperio.github.io/Echoes-of-Aethelgard/3d/).
 
 ## Controles
 
-| Ação | Tecla |
-|------|-------|
-| Mover | WASD / Setas |
-| Pular / Pulo Duplo | Espaço |
-| Dash | Shift |
-| Atacar (Lâmina Etérea) | Clique esquerdo ou F |
-| Salvar / Curar | E (perto do Pilar de Salvamento) |
-| Olhar | Mouse |
+| Ação | Teclas |
+| --- | --- |
+| Mover | A / D ou setas |
+| Pular | Espaço ou W (segure para pular mais alto) |
+| Atacar | J ou Z |
+| Magia | K ou X |
+| Dash | L ou C |
+| Ação (santuário, baú, portal) | E ou Enter |
+| Poção | Q |
+| Mapa / viagem entre santuários | M |
+| Pausa | P |
 
-## O que já existe no protótipo
+No celular, os botões de toque aparecem abaixo do jogo.
 
-- 3 áreas conectadas (Hall de Entrada, Corredor das Sombras, Antecâmara do Lorde)
-- Sistema de vida e Éter
-- Dash com consumo de Éter
-- Pulo Duplo (colete o cristal ciano na plataforma lateral)
-- Combate corpo-a-corpo
-- Inimigos com IA simples (esqueletos e rastejadores de cristal)
-- Pilar de Salvamento + respawn
-- Transição entre salas
-- HUD e mensagens de feedback
+## Publicação
 
-## Personagens (conceito)
+O workflow `.github/workflows/deploy.yml` publica o site no GitHub Pages a cada push na `main`.
+Em Settings → Pages, a fonte deve ser **GitHub Actions**.
 
-- **Kaelen** — Protagonista (braço e espada de energia azul)
-- **Elara** — Eco-Vigilante / guia
-- **Malakor** — Arquiteto do Vazio (antagonista final)
+## Estrutura
 
-## GitHub Actions
-
-O workflow `.github/workflows/deploy.yml` publica o site no GitHub Pages automaticamente a cada push na branch `main`.
-
-Projeto em desenvolvimento ativo.
+- `index.html`, `css/style.css`, `js/game.js`: o jogo 2D
+- `assets/`: artes dos personagens e chefes
+- `3d/`: protótipo 3D anterior (Three.js)
