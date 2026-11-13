@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Echoes of Aethelgard</title>
+<meta name="description" content="Metroidvania 2D de fantasia sombria Arcane Punk com sete terras, castelos e Lordes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Spectral:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Echoes of Aethelgard</h1>
+<p>Metroidvania 2D de fantasia sombria Arcane Punk. Clique no jogo para começar.</p>
+</header>
+
+<div class="stage"><canvas id="c" tabindex="0" aria-label="Área do jogo Echoes of Aethelgard"></canvas></div>
+
+<div class="touch" id="touch">
+<div class="grp"><button data-k="left" aria-label="Esquerda">&#9664;</button><button data-k="right" aria-label="Direita">&#9654;</button><button data-k="down" aria-label="Baixo">&#9660;</button></div>
+<div class="grp" style="justify-content:flex-end"><button data-k="act">Ação</button><button data-k="dash">Dash</button><button data-k="mag">Magia</button><button data-k="atk">Atacar</button><button data-k="jump">Pular</button></div>
+</div>
+
+<div class="cols">
+<section class="box">
+<h2>Controles</h2>
+<dl>
+<dt>Mover</dt><dd><kbd>A</kbd> <kbd>D</kbd> ou setas</dd>
+<dt>Pular</dt><dd><kbd>Espaço</kbd> ou <kbd>W</kbd></dd>
+<dt>Atacar</dt><dd><kbd>J</kbd> ou <kbd>Z</kbd></dd>
+<dt>Magia</dt><dd><kbd>K</kbd> ou <kbd>X</kbd></dd>
+<dt>Dash</dt><dd><kbd>L</kbd> ou <kbd>C</kbd></dd>
+<dt>Ação</dt><dd><kbd>E</kbd> ou <kbd>Enter</kbd> (santuário, baú, portal)</dd>
+<dt>Descer</dt><dd><kbd>↓</kbd> + Pular atravessa plataformas</dd>
+<dt>Poção</dt><dd><kbd>Q</kbd></dd>
+<dt>Mapa</dt><dd><kbd>M</kbd> · Pausa <kbd>P</kbd></dd>
+</dl>
+<p class="note">O progresso é salvo nos altares, neste navegador.</p>
+</section>
+<section class="box">
+<h2>As sete terras</h2>
+<div class="tw"><table>
+<thead><tr><th>Terra</th><th>Castelo</th><th>Lord</th><th>Poder</th></tr></thead>
+<tbody>
+<tr><td>Vila Ferrugem</td><td>Posto da Guarda Quebrada</td><td>O Sentinela Forjado</td><td>Gravidade (salto duplo)</td></tr>
+<tr><td>Floresta Sussurrante</td><td>Castelo das Raízes</td><td>Thorne, Senhor das Raízes</td><td>Aether Dash</td></tr>
+<tr><td>Cavernas Cristalinas</td><td>Castelo Geodo</td><td>Araknis, Matriarca de Cristal</td><td>Garras de cristal</td></tr>
+<tr><td>Charco Corroído</td><td>Castelo Afogado</td><td>Murkal, o Submerso</td><td>Capa de Éter (planar)</td></tr>
+<tr><td>Picos de Vidro</td><td>Fortaleza da Geada</td><td>Ysmir, a Tempestade</td><td>Espada Etérea temperada</td></tr>
+<tr><td>Forja Abissal</td><td>Castelo da Forja</td><td>Cinder, o Ferreiro Rubro</td><td>Núcleo sobrecarregado</td></tr>
+<tr><td>Cidadela do Vazio</td><td>Trono do Vazio</td><td>Malakor, o Arquiteto do Vazio</td><td>Fim da corrupção</td></tr>
+</tbody></table></div>
+<p class="note">Mundo, criaturas, Lordes e história são originais. Poderes novos abrem caminhos antigos: volte aos Eco-Santuários pelo mapa.</p>
+</section>
+</div>
+
+<section class="box">
+<h2>Elenco</h2>
+<div class="cast">
+<figure><img id="im-kaelen" alt="Kaelen, o Andarilho de Éter, com a Espada Etérea azul"><figcaption><b>Kaelen</b>Andarilho de Éter. Protagonista, empunha a Espada Etérea.</figcaption></figure>
+<figure><img id="im-elara" alt="Elara, a Eco-Vigilante, com cajado verde-esmeralda"><figcaption><b>Elara</b>Eco-Vigilante. Guia nos Eco-Santuários.</figcaption></figure>
+<figure><img id="im-sentinel" alt="O Sentinela Forjado, construto de pedra e ferro"><figcaption><b>O Sentinela Forjado</b>Primeiro Lord, guardião da Vila Ferrugem.</figcaption></figure>
+<figure><img id="im-spider" alt="Rastejador do Éter, aracnídeo com cristais azuis"><figcaption><b>Rastejador do Éter</b>Predador das cavernas. Sua matriarca é a Lord de Geodo.</figcaption></figure>
+<figure><img id="im-malakor" alt="Malakor, o Arquiteto do Vazio"><figcaption><b>Malakor</b>Arquiteto do Vazio. Lord final da Cidadela.</figcaption></figure>
+</div>
+</section>
+</div>
+<script src="js/game.js"></script>
+</body>
+</html>
