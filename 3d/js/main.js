@@ -436,6 +436,7 @@ function setupEvents() {
   });
   document.addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'Space') e.preventDefault(); });
   document.addEventListener('keyup', e => { keys[e.code] = false; });
+  window.addEventListener('pagehide', () => { if (gameStarted) persistCampaign(); });
   document.addEventListener('mousedown', e => { if (e.button === 0 && controls.isLocked) tryAttack(); });
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
