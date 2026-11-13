@@ -398,12 +398,13 @@ function checkInteractables() {
   rooms.hall.children.forEach(c => {
     if (c.userData && c.userData.isDoubleJump && !c.userData.collected && player.position.distanceTo(c.position) < 2.4) {
       c.userData.collected = true; c.visible = false; player.hasDoubleJump = true; sfx('collect');
+      persistCampaign();
       showMessage('Asas Etéreas adquiridas — Pulo Duplo desbloqueado!');
       document.getElementById('ability-hint').textContent = 'Dash pronto | Pulo Duplo ativo';
     }
   });
   savePoints.forEach(sp => {
-    if (camera.position.distanceTo(sp.pos) < 2.6 && keys['KeyE']) {
+    if (player.position.distanceTo(sp.pos) < 2.6 && keys['KeyE']) {
       player.health = player.maxHealth; player.ether = player.maxEther; spawnPoint.copy(sp.pos);
       updateHUD();
       if (persistCampaign()) { sfx('save'); showMessage('Campanha salva neste dispositivo.'); }
