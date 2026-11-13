@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { saveCampaign, loadCampaign } from './campaign-save.js';
 
 /* Echoes of Aethelgard 3D Prototype - Sylvan Keep */
 const CONFIG = {
@@ -68,7 +69,7 @@ function init() {
   window.camera = camera;
   controls = new PointerLockControls(camera, document.body);
 
-  setupLights(); buildWorld(); setupEvents(); updateHUD(); animate();
+  setupLights(); buildWorld(); restoreCampaign(); setupEvents(); updateHUD(); animate();
 }
 
 function setupLights() {
@@ -132,6 +133,45 @@ function createSavePillar(x, y, z) {
   })); top.position.y = 4.1; g.add(top);
   const light = new THREE.PointLight(0x66bbff, 3.2, 14); light.position.y = 4.1; g.add(light);
   g.position.set(x, y, z); g.userData.isSave = true; return g;
+}
+
+function restoreCampaign() {
+  const result = loadCampaign(window.localStorage);
+  if (!result.ok) return;
+  const saved = result.snapshot;
+  currentRoom = saved.currentRoom;
+  Object.values(rooms).forEach(room => { room.visible = room.name === currentRoom; });
+  camera.position.set(saved.position.x, saved.position.y, saved.position.z);
+  spawnPoint.set(saved.spawnPoint.x, saved.spawnPoint.y, saved.spawnPoint.z);
+  player.health = saved.health;
+  player.ether = saved.ether;
+  player.hasDoubleJump = saved.hasDoubleJump;
+  bossDefeated = saved.bossDefeated;
+  if (bossDefeated) {
+    enemies.filter(enemy => enemy.userData.isBoss).forEach(enemy => {
+      enemy.userData.alive = false;
+      enemy.visible = false;
+    });
+  }
+  const names = { hall: 'Hall de Entrada — Sylvan Keep', corridor: 'Corredor das Sombras', ante: bossDefeated ? 'Antecâmara Purificada' : 'Antecâmara do Lorde' };
+  document.getElementById('location-name').textContent = names[currentRoom];
+  if (player.hasDoubleJump) document.getElementById('ability-hint').textContent = 'Dash disponível | Pulo Duplo ativo';
+  document.getElementById('start-btn').textContent = 'Continuar campanha';
+  showMessage('Progresso local restaurado.');
+}
+
+function persistCampaign() {
+  const result = saveCampaign(window.localStorage, {
+    currentRoom,
+    position: camera.position,
+    spawnPoint,
+    health: player.health,
+    ether: player.ether,
+    hasDoubleJump: player.hasDoubleJump,
+    bossDefeated
+  });
+  if (!result.ok) showMessage('Não foi possível salvar neste dispositivo.');
+  return result.ok;
 }
 
 function buildWorld() {
@@ -265,7 +305,7 @@ function damageEnemy(enemy, amount) {
     enemy.userData.alive = false; enemy.visible = false;
     player.ether = Math.min(player.maxEther, player.ether + (enemy.userData.isBoss ? 40 : 14)); updateHUD();
     if (enemy.userData.isBoss) {
-      bossDefeated = true; sfx('win');
+      bossDefeated = true; persistCampaign(); sfx('win');
       showMessage('Malakor fragmentado! A Antecâmara foi purificada.');
       setTimeout(() => { gameWon = true; showMessage('Área limpa — Sylvan Keep dominado.'); }, 3200);
     }
@@ -306,6 +346,7 @@ function switchRoom(name, spawn) {
   Object.values(rooms).forEach(r => r.visible = false);
   rooms[name].visible = true; currentRoom = name;
   camera.position.copy(spawn); player.velocity.set(0, 0, 0);
+  persistCampaign();
   const names = { hall: 'Hall de Entrada — Sylvan Keep', corridor: 'Corredor das Sombras', ante: bossDefeated ? 'Antecâmara Purificada' : 'Antecâmara do Lorde' };
   document.getElementById('location-name').textContent = names[name] || name;
 }
@@ -321,7 +362,9 @@ function checkInteractables() {
   savePoints.forEach(sp => {
     if (camera.position.distanceTo(sp.pos) < 2.6 && keys['KeyE']) {
       player.health = player.maxHealth; player.ether = player.maxEther; spawnPoint.copy(sp.pos);
-      updateHUD(); sfx('save'); showMessage('Éter restaurado — Ponto de salvamento ativado'); keys['KeyE'] = false;
+      updateHUD();
+      if (persistCampaign()) { sfx('save'); showMessage('Campanha salva neste dispositivo.'); }
+      keys['KeyE'] = false;
     }
   });
 }
